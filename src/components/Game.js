@@ -1,7 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
 import '../styles/Game.css';
-import AdBanner from './AdBanner';
-import AdDialog from './AdDialog';
 
 const Game = () => {
   const gameAreaRef = useRef(null);
@@ -13,7 +11,8 @@ const Game = () => {
   const [birdPosition, setBirdPosition] = useState(250);
   const [obstacles, setObstacles] = useState([]);
   const [playCount, setPlayCount] = useState(0);
-  const [showAdDialog, setShowAdDialog] = useState(false);
+
+
   
   // Use public URL paths instead of imports
   const characterImg = `${process.env.PUBLIC_URL}/images/character.png`;
@@ -131,11 +130,6 @@ const Game = () => {
       const newPlayCount = playCount + 1;
       setPlayCount(newPlayCount);
       
-      // Show ad dialog after every 3 plays
-      if (newPlayCount % 3 === 0) {
-        setShowAdDialog(true);
-        return; // Don't start the game yet, wait for ad to be closed
-      }
     }
     
     setGameStarted(true);
@@ -183,7 +177,6 @@ const Game = () => {
   };
   
   const handleCloseAd = () => {
-    setShowAdDialog(false);
     // Start the game after ad is closed
     setGameStarted(true);
     setGameOver(false);
@@ -470,8 +463,6 @@ const Game = () => {
           <div className="score">{score}</div>
         )}
         
-        {/* Ad dialog that appears after every 3 plays */}
-        {showAdDialog && <AdDialog onClose={handleCloseAd} />}
       </div>
       
     </div>
