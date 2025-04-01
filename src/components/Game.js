@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import '../styles/Game.css';
 import AdBanner from './AdBanner';
+import AdDialog from './AdDialog';
 
 const Game = () => {
   const gameAreaRef = useRef(null);
@@ -11,11 +12,15 @@ const Game = () => {
   const [score, setScore] = useState(0);
   const [birdPosition, setBirdPosition] = useState(250);
   const [obstacles, setObstacles] = useState([]);
+  const [playCount, setPlayCount] = useState(0);
+  const [showAdDialog, setShowAdDialog] = useState(false);
   
   // Use public URL paths instead of imports
   const characterImg = `${process.env.PUBLIC_URL}/images/character.png`;
   const poleTopImg = `${process.env.PUBLIC_URL}/images/pole1.png`;
   const poleBottomImg = `${process.env.PUBLIC_URL}/images/pole2.png`;
+  const poleTop2Img = `${process.env.PUBLIC_URL}/images/pole3.png`;
+  const poleBottom2Img = `${process.env.PUBLIC_URL}/images/pole4.png`;
   const backgroundMusic = `${process.env.PUBLIC_URL}/audio/viruss.mp3`;
   
   // Adjust game physics for better gameplay
@@ -30,6 +35,9 @@ const Game = () => {
   // Add minimum heights for poles to ensure visibility
   const minPoleHeight = 90; // Reduced minimum height to allow for larger gap
   const maxPoleHeight = 300; // Maximum height for poles
+  
+  // Minimum distance between obstacles to prevent overlap
+  const minObstacleDistance = 400; // Increased minimum distance between obstacles
   
   // Character size adjustment
   const characterWidth = 110;  // Width for the bottle character
@@ -98,23 +106,35 @@ const Game = () => {
   }, [gameStarted, gameOver, birdPosition, obstacles]);
   
   // Update game speed based on score
-    useEffect(() => {
-      if (score >= 15) {
-        setGameSpeed(6.0); // Increase speed significantly when score reaches 20
-      } else if (score >= 13) {
-        setGameSpeed(7);
-      } else if (score >= 8) {
-        setGameSpeed(5);
-      }
-      else {
-        setGameSpeed(initialGameSpeed);
-      }
-    }, [score]);
+  useEffect(() => {
+    if (score >= 15) {
+      setGameSpeed(6.0); // Increase speed significantly when score reaches 20
+    } else if (score >= 13) {
+      setGameSpeed(7);
+    } else if (score >= 8) {
+      setGameSpeed(5);
+    }
+    else {
+      setGameSpeed(initialGameSpeed);
+    }
+  }, [score]);
     
-    // Create a ref to track the score to avoid multiple updates
-    const scoreRef = useRef(0);
+  // Create a ref to track the score to avoid multiple updates
+  const scoreRef = useRef(0);
   
   const startGame = () => {
+    // Increment play count when starting a new game (not on first load)
+    if (gameStarted) {
+      const newPlayCount = playCount + 1;
+      setPlayCount(newPlayCount);
+      
+      // Show ad dialog after every 3 plays
+      if (newPlayCount % 3 === 0) {
+        setShowAdDialog(true);
+        return; // Don't start the game yet, wait for ad to be closed
+      }
+    }
+    
     setGameStarted(true);
     setGameOver(false);
     setBirdPosition(250);
@@ -131,25 +151,48 @@ const Game = () => {
     }
   };
   
+  const handleCloseAd = () => {
+    setShowAdDialog(false);
+    // Start the game after ad is closed
+    setGameStarted(true);
+    setGameOver(false);
+    setBirdPosition(250);
+    setScore(0);
+    scoreRef.current = 0;
+    setObstacles([]);
+    birdVelocity.current = 0;
+    setGameSpeed(initialGameSpeed);
+    
+    if (audioRef.current) {
+      audioRef.current.currentTime = 0;
+      audioRef.current.play().catch(e => console.log("Audio playback failed:", e));
+    }
+  };
+  
   const handleJump = (e) => {
-    // Prevent double clicks/taps
+    // Prevent default behavior to avoid double triggers
+    if (e && e.preventDefault) {
+      e.preventDefault();
+    }
+    
+    // Prevent double clicks/taps with improved handling
     if (clickTimeoutRef.current) {
       return;
     }
     
-    // Set a timeout to prevent rapid clicks
+    // Set a timeout to prevent rapid clicks - increased to 300ms for mobile
     clickTimeoutRef.current = setTimeout(() => {
       clickTimeoutRef.current = null;
-    }, 100);
+    }, isMobileRef.current ? 300 : 100);
     
+    // Only handle jump if game is not over
     if (!gameStarted) {
       startGame();
     } else if (!gameOver) {
       // Use different jump strength for mobile
       birdVelocity.current = isMobileRef.current ? mobileJump : jump;
-    } else {
-      startGame();
     }
+    // Removed the "else" condition that was allowing replay on any click
   };
   
   const updateBirdPosition = () => {
@@ -172,8 +215,11 @@ const Game = () => {
   
   const updateObstacles = () => {
     // Generate new obstacles
-    if (gameStarted && obstacles.length === 0 || 
-        obstacles.length > 0 && obstacles[obstacles.length - 1].x < gameAreaRef.current.clientWidth - 350) {
+    if (gameStarted && 
+        (obstacles.length === 0 || 
+         (obstacles.length > 0 && 
+          obstacles[obstacles.length - 1].x < gameAreaRef.current.clientWidth - minObstacleDistance))) {
+      
       const height = gameAreaRef.current.clientHeight;
       
       // Add extra space for the first obstacle
@@ -192,12 +238,16 @@ const Game = () => {
       // Ensure the bottom pole isn't too tall but still reaches the bottom
       const adjustedBottomHeight = Math.max(bottomHeight, height - (topHeight + gapSize));
       
+      // Randomly select which pole image to use (alternating between the two sets)
+      const poleSet = Math.random() > 0.5 ? 1 : 2;
+      
       const newObstacle = {
         id: Date.now(),
         x: initialXPosition,
         topHeight: topHeight,
         bottomHeight: adjustedBottomHeight,
-        passed: false
+        passed: false,
+        poleSet: poleSet // Add pole set information
       };
       
       setObstacles(prevObstacles => [...prevObstacles, newObstacle]);
@@ -277,14 +327,14 @@ const Game = () => {
   
   return (
     <div className="game-wrapper">
-      {/* Top ad banner */}
-      <AdBanner slot="1234567890" />
       
       <div 
         className="game-container" 
         ref={gameAreaRef}
         onClick={handleJump}
         onTouchStart={handleJump}
+        onTouchEnd={(e) => e.preventDefault()} // Prevent ghost clicks
+        style={{ touchAction: 'none' }} // Disable browser handling of touch gestures
       >
         {/* Floating virus background elements */}
         <div className="floating-virus">
@@ -338,7 +388,7 @@ const Game = () => {
                 left: `${obstacle.x}px`, 
                 height: `${obstacle.topHeight}px`,
                 width: `${obstacleWidth}px`,
-                backgroundImage: `url(${poleTopImg})`,
+                backgroundImage: `url(${obstacle.poleSet === 1 ? poleTopImg : poleTop2Img})`,
                 backgroundSize: 'contain',
                 backgroundRepeat: 'repeat-y'
               }}
@@ -352,7 +402,7 @@ const Game = () => {
                 height: `${obstacle.bottomHeight}px`,
                 width: `${obstacleWidth}px`,
                 top: `${obstacle.topHeight + gapSize}px`,
-                backgroundImage: `url(${poleBottomImg})`,
+                backgroundImage: `url(${obstacle.poleSet === 1 ? poleBottomImg : poleBottom2Img})`,
                 backgroundSize: 'contain',
                 backgroundRepeat: 'repeat-y'
               }}
@@ -380,10 +430,11 @@ const Game = () => {
         {gameStarted && !gameOver && (
           <div className="score">{score}</div>
         )}
+        
+        {/* Ad dialog that appears after every 3 plays */}
+        {showAdDialog && <AdDialog onClose={handleCloseAd} />}
       </div>
       
-      {/* Bottom ad banner - only show when game is over */}
-      {gameOver && <AdBanner slot="0987654321" format="rectangle" />}
     </div>
   );
 };
