@@ -320,11 +320,10 @@
   position: relative;
 }
 .text-color-ads{
-  color: rgb(255, 177, 190);
+  color: pink;
   font-size: larger;
   font-weight: bold;
   text-decoration: wavy;
-  text-shadow: 1px 1px 1px rgba(0, 0, 0, 0.5);
 }
 .wave-text span {
   display: inline-block;
@@ -397,39 +396,13 @@
   border-radius: 5px;
   cursor: pointer;
   font-size: 16px;
-  font-weight: bold;
-  transition: all 0.3s ease;
+  transition: background-color 0.3s;
   width: 100%;
   max-width: 200px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-  position: relative;
-  overflow: hidden;
 }
 
 .close-ad-button:hover {
   background-color: #45a049;
-  transform: translateY(-2px);
-  box-shadow: 0 6px 8px rgba(0, 0, 0, 0.2);
-}
-
-.close-ad-button:active {
-  transform: translateY(1px);
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-}
-
-.close-ad-button::after {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: -100%;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
-  transition: 0.5s;
-}
-
-.close-ad-button:hover::after {
-  left: 100%;
 }
 
 .ad-container {

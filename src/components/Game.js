@@ -26,7 +26,7 @@ const Game = () => {
   // Adjust game physics for better gameplay
   const gravity = 0.4;
   const jump = -8; // Original value
-  const mobileJump = -6; // Reduced jump strength for mobile
+  const mobileJump = -7; // Reduced jump strength for mobile
   const obstacleWidth = 120; // Further increased width for the toothbrush/pole
   const gapSize = 250; // Increased gap size to ensure bird can pass through
   const initialGameSpeed = 3.0;
@@ -122,6 +122,9 @@ const Game = () => {
   // Create a ref to track the score to avoid multiple updates
   const scoreRef = useRef(0);
   
+  // Create a ref to track if audio has been initialized
+  const audioInitializedRef = useRef(false);
+  
   const startGame = () => {
     // Increment play count when starting a new game (not on first load)
     if (gameStarted) {
@@ -144,10 +147,38 @@ const Game = () => {
     birdVelocity.current = 0;
     setGameSpeed(initialGameSpeed); // Reset game speed
     
-    // Play background music when game starts
+    // Play background music when game starts - with improved mobile handling
+    playAudio();
+  };
+  
+  // Add a separate function to handle audio playback
+  const playAudio = () => {
     if (audioRef.current) {
       audioRef.current.currentTime = 0; // Reset audio to beginning
-      audioRef.current.play().catch(e => console.log("Audio playback failed:", e));
+      
+      // Only play if we haven't tried to initialize audio yet
+      if (!audioInitializedRef.current) {
+        audioInitializedRef.current = true;
+        
+        // Create a user gesture context for audio
+        const playPromise = audioRef.current.play();
+        
+        if (playPromise !== undefined) {
+          playPromise
+            .then(() => {
+              // Audio playback started successfully
+              console.log("Audio playback started successfully");
+            })
+            .catch(e => {
+              // Auto-play was prevented, we'll try again on next user interaction
+              console.log("Audio playback failed:", e);
+              audioInitializedRef.current = false; // Reset so we can try again
+            });
+        }
+      } else {
+        // We've already initialized audio, just play it
+        audioRef.current.play().catch(e => console.log("Audio playback failed:", e));
+      }
     }
   };
   
@@ -163,21 +194,27 @@ const Game = () => {
     birdVelocity.current = 0;
     setGameSpeed(initialGameSpeed);
     
-    if (audioRef.current) {
-      audioRef.current.currentTime = 0;
-      audioRef.current.play().catch(e => console.log("Audio playback failed:", e));
-    }
+    // Use the improved audio playback function
+    playAudio();
   };
   
   const handleJump = (e) => {
-    // Prevent default behavior to avoid double triggers
-    if (e && e.preventDefault) {
-      e.preventDefault();
-    }
+    // Don't try to preventDefault for passive events
+    // This avoids the "Unable to preventDefault inside passive event listener" warning
     
     // Prevent double clicks/taps with improved handling
     if (clickTimeoutRef.current) {
       return;
+    }
+    
+    // Don't handle clicks when game is over (except for the replay button)
+    if (gameOver) {
+      return;
+    }
+    
+    // Try to play audio on first interaction if it hasn't started yet
+    if (!audioInitializedRef.current && audioRef.current) {
+      playAudio();
     }
     
     // Set a timeout to prevent rapid clicks - increased to 300ms for mobile
@@ -185,14 +222,12 @@ const Game = () => {
       clickTimeoutRef.current = null;
     }, isMobileRef.current ? 300 : 100);
     
-    // Only handle jump if game is not over
     if (!gameStarted) {
       startGame();
     } else if (!gameOver) {
       // Use different jump strength for mobile
       birdVelocity.current = isMobileRef.current ? mobileJump : jump;
     }
-    // Removed the "else" condition that was allowing replay on any click
   };
   
   const updateBirdPosition = () => {
@@ -332,9 +367,13 @@ const Game = () => {
         className="game-container" 
         ref={gameAreaRef}
         onClick={handleJump}
-        onTouchStart={handleJump}
-        onTouchEnd={(e) => e.preventDefault()} // Prevent ghost clicks
-        style={{ touchAction: 'none' }} // Disable browser handling of touch gestures
+        onTouchStart={(e) => {
+          // Use this approach instead of preventDefault
+          e.stopPropagation();
+          handleJump();
+        }}
+        // Remove the onTouchEnd handler that was calling preventDefault
+        style={{ touchAction: 'none' }} // Keep this to disable browser handling of touch gestures
       >
         {/* Floating virus background elements */}
         <div className="floating-virus">
