@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import '../styles/Game.css';
+import AdBanner from './AdBanner';
 
 const Game = () => {
   const gameAreaRef = useRef(null);
@@ -275,106 +276,114 @@ const Game = () => {
   };
   
   return (
-    <div 
-      className="game-container" 
-      ref={gameAreaRef}
-      onClick={handleJump}
-      onTouchStart={handleJump}
-    >
-      {/* Floating virus background elements */}
-      <div className="floating-virus">
-        <div className="spike-x"></div>
-        <div className="spike-y"></div>
-      </div>
-      <div className="floating-virus">
-        <div className="spike-x"></div>
-        <div className="spike-y"></div>
-      </div>
-      <div className="floating-virus">
-        <div className="spike-x"></div>
-        <div className="spike-y"></div>
-      </div>
-      <div className="floating-virus">
-        <div className="spike-x"></div>
-        <div className="spike-y"></div>
-      </div>
-      <div className="floating-virus">
-        <div className="spike-x"></div>
-        <div className="spike-y"></div>
-      </div>
-      <div className="floating-virus">
-        <div className="spike-x"></div>
-        <div className="spike-y"></div>
-      </div>
+    <div className="game-wrapper">
+      {/* Top ad banner */}
+      <AdBanner slot="1234567890" />
       
-      {/* Audio element */}
-      <audio ref={audioRef} preload="auto">
-        <source src={backgroundMusic} type="audio/mpeg" />
-        Your browser does not support the audio element.
-      </audio>
-      
-      {/* Rest of your game elements */}
       <div 
-        className="bird" 
-        ref={birdRef}
-        style={{ 
-          top: `${birdPosition}px`,
-          backgroundImage: `url(${characterImg})`,
-          width: `${characterWidth}px`,
-          height: `${characterHeight}px`
-        }}
-      />
-      
-      {obstacles.map(obstacle => (
-        <React.Fragment key={obstacle.id}>
-          <div 
-            className="obstacle top" 
-            style={{ 
-              left: `${obstacle.x}px`, 
-              height: `${obstacle.topHeight}px`,
-              width: `${obstacleWidth}px`,
-              backgroundImage: `url(${poleTopImg})`,
-              backgroundSize: 'contain',
-              backgroundRepeat: 'repeat-y'
-            }}
-          >
-            <div className="obstacle-wave"></div>
-          </div>
-          <div 
-            className="obstacle bottom" 
-            style={{ 
-              left: `${obstacle.x}px`, 
-              height: `${obstacle.bottomHeight}px`,
-              width: `${obstacleWidth}px`,
-              top: `${obstacle.topHeight + gapSize}px`,
-              backgroundImage: `url(${poleBottomImg})`,
-              backgroundSize: 'contain',
-              backgroundRepeat: 'repeat-y'
-            }}
-          >
-            <div className="obstacle-wave"></div>
-          </div>
-        </React.Fragment>
-      ))}
-      
-      {!gameStarted && (
-        <div className="start-screen">
-          <h1 className="wave-text">Flappy Di-rút</h1>
-          <small className="text-start">Chạm để bắt đầu chơi</small>
+        className="game-container" 
+        ref={gameAreaRef}
+        onClick={handleJump}
+        onTouchStart={handleJump}
+      >
+        {/* Floating virus background elements */}
+        <div className="floating-virus">
+          <div className="spike-x"></div>
+          <div className="spike-y"></div>
         </div>
-      )}
-      
-      {gameOver && (
-        <div className="game-over text-color">
-          <h1>Em phải tin anh chứ?</h1>
-          <p>Anh chỉ yêu mỗi <i className="score-color">{score}</i> em thôi!</p>
-          <button onClick={startGame}>Chơi lại</button>
+        <div className="floating-virus">
+          <div className="spike-x"></div>
+          <div className="spike-y"></div>
         </div>
-      )}
+        <div className="floating-virus">
+          <div className="spike-x"></div>
+          <div className="spike-y"></div>
+        </div>
+        <div className="floating-virus">
+          <div className="spike-x"></div>
+          <div className="spike-y"></div>
+        </div>
+        <div className="floating-virus">
+          <div className="spike-x"></div>
+          <div className="spike-y"></div>
+        </div>
+        <div className="floating-virus">
+          <div className="spike-x"></div>
+          <div className="spike-y"></div>
+        </div>
+        
+        {/* Audio element */}
+        <audio ref={audioRef} preload="auto">
+          <source src={backgroundMusic} type="audio/mpeg" />
+          Your browser does not support the audio element.
+        </audio>
+        
+        {/* Rest of your game elements */}
+        <div 
+          className="bird" 
+          ref={birdRef}
+          style={{ 
+            top: `${birdPosition}px`,
+            backgroundImage: `url(${characterImg})`,
+            width: `${characterWidth}px`,
+            height: `${characterHeight}px`
+          }}
+        />
+        
+        {obstacles.map(obstacle => (
+          <React.Fragment key={obstacle.id}>
+            <div 
+              className="obstacle top" 
+              style={{ 
+                left: `${obstacle.x}px`, 
+                height: `${obstacle.topHeight}px`,
+                width: `${obstacleWidth}px`,
+                backgroundImage: `url(${poleTopImg})`,
+                backgroundSize: 'contain',
+                backgroundRepeat: 'repeat-y'
+              }}
+            >
+              <div className="obstacle-wave"></div>
+            </div>
+            <div 
+              className="obstacle bottom" 
+              style={{ 
+                left: `${obstacle.x}px`, 
+                height: `${obstacle.bottomHeight}px`,
+                width: `${obstacleWidth}px`,
+                top: `${obstacle.topHeight + gapSize}px`,
+                backgroundImage: `url(${poleBottomImg})`,
+                backgroundSize: 'contain',
+                backgroundRepeat: 'repeat-y'
+              }}
+            >
+              <div className="obstacle-wave"></div>
+            </div>
+          </React.Fragment>
+        ))}
+        
+        {!gameStarted && (
+          <div className="start-screen">
+            <h1 className="wave-text">Flappy Di-rút</h1>
+            <small className="text-start">Chạm để bắt đầu chơi</small>
+          </div>
+        )}
+        
+        {gameOver && (
+          <div className="game-over text-color">
+            <h1>Em phải tin anh chứ?</h1>
+            <p>Anh chỉ yêu mỗi <i className="score-color">{score}</i> em thôi!</p>
+            <button onClick={startGame}>Chơi lại</button>
+          </div>
+        )}
+        
+        {gameStarted && !gameOver && (
+          <div className="score">{score}</div>
+        )}
+      </div>
       
-      {gameStarted && !gameOver && (
-        <div className="score">{score}</div>
-      )}
+      {/* Bottom ad banner - only show when game is over */}
+      {gameOver && <AdBanner slot="0987654321" format="rectangle" />}
     </div>
   );
 };

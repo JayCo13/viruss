@@ -337,3 +337,25 @@
     transform: translateY(10px) rotate(-3deg);
   }
 }
+
+
+/* Add this to your existing CSS file */
+.ad-container {
+  width: 100%;
+  max-width: 728px;
+  margin: 10px auto;
+  overflow: hidden;
+  text-align: center;
+  background-color: #f8f8f8;
+  padding: 5px;
+  border-radius: 5px;
+}
+
+/* Make sure ads don't interfere with gameplay */
+.game-wrapper {
+  position: relative;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
