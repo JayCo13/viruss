@@ -459,7 +459,10 @@ const Game = () => {
         {gameStarted && !gameOver && (
           <div className="score">{score}</div>
         )}
-        
+         <div className="disclaimer-text">
+         <span className="warning-icon">⚠️</span> 
+          GAME CHỈ MANG TÍNH CHẤT GIẢI TRÍ, KHÔNG CÓ Ý CÔNG KÍCH HAY XÚC PHẠM BẤT KÌ CÁ NHÂN, TỔ CHỨC NÀO !
+        </div>
       </div>
       
     </div>

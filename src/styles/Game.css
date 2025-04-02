@@ -477,3 +477,44 @@
     padding: 2px;
   }
 }
+
+/* Add this to your existing Game.css file */
+.warning-icon {
+  display: inline-block;
+  margin-right: 5px;
+  font-size: 14px;
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0% {
+    opacity: 0.7;
+  }
+  50% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0.7;
+  }
+}
+.disclaimer-text {
+  position: absolute;
+  bottom: 10px;
+  left: 0;
+  right: 0;
+  text-align: center;
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.7);
+  padding: 5px;
+  z-index: 15;
+  font-weight: 500;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+}
+
+/* Make it responsive */
+@media (max-width: 768px) {
+  .disclaimer-text {
+    font-size: 10px;
+    bottom: 5px;
+  }
+}
