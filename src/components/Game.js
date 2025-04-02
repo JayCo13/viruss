@@ -45,6 +45,7 @@ const Game = () => {
   // Add debounce for click/tap handling
   const clickTimeoutRef = useRef(null);
   const isMobileRef = useRef(false);
+  const lastTapTimeRef = useRef(0); // Add a ref to track last tap time
   
   // Detect if user is on mobile
   useEffect(() => {
@@ -192,12 +193,14 @@ const Game = () => {
   };
   
   const handleJump = (e) => {
-    // Don't try to preventDefault for passive events
-    // This avoids the "Unable to preventDefault inside passive event listener" warning
-    
-    // Prevent double clicks/taps with improved handling
-    if (clickTimeoutRef.current) {
-      return;
+    // Prevent double taps on mobile with improved timing check
+    const now = Date.now();
+    if (isMobileRef.current) {
+      // If less than 300ms since last tap, ignore this tap
+      if (now - lastTapTimeRef.current < 300) {
+        return;
+      }
+      lastTapTimeRef.current = now;
     }
     
     // Don't handle clicks when game is over (except for the replay button)
@@ -209,11 +212,6 @@ const Game = () => {
     if (!audioInitializedRef.current && audioRef.current) {
       playAudio();
     }
-    
-    // Set a timeout to prevent rapid clicks - increased to 300ms for mobile
-    clickTimeoutRef.current = setTimeout(() => {
-      clickTimeoutRef.current = null;
-    }, isMobileRef.current ? 300 : 100);
     
     if (!gameStarted) {
       startGame();
@@ -365,8 +363,7 @@ const Game = () => {
           e.stopPropagation();
           handleJump();
         }}
-        // Remove the onTouchEnd handler that was calling preventDefault
-        style={{ touchAction: 'none' }} // Keep this to disable browser handling of touch gestures
+        style={{ touchAction: 'none' }} 
       >
         {/* Floating virus background elements */}
         <div className="floating-virus">
